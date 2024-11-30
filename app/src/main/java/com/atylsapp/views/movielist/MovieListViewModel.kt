@@ -1,7 +1,8 @@
-package com.atylsapp.ui
+package com.atylsapp.views.movielist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.atylsapp.models.Movie
 import com.atylsapp.repository.MovieRepo
 import com.atylsapp.utils.Status
 import com.atylsapp.utils.collectLatest
@@ -10,25 +11,36 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class MovieViewModel @Inject constructor(
     private val movieRepo: MovieRepo
 ) : ViewModel() {
 
-    init {
+    private var movies: List<Movie>? = listOf()
 
+    init {
+        getMovies()
     }
 
-    fun getMovies() {
+    private fun getMovies() {
         resourceFlow {
             movieRepo.getMovies()
         }.collectLatest(viewModelScope) {
-            when(it.status) {
-                Status.LOADING -> {}
-                Status.SUCCESS -> {
-                    println("Movies are: ${it.data}")
+            when (it.status) {
+                Status.LOADING -> {
+
                 }
-                Status.ERROR -> {}
+
+                Status.SUCCESS -> {
+                    movies = it.data?.results // Caching the movies data
+                    println("Movies are: $movies")
+
+                }
+
+                Status.ERROR -> {
+
+                }
             }
         }
     }
+
 }

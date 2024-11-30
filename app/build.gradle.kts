@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -88,4 +89,13 @@ dependencies {
     //okHTTP
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
+
+    // Navigation Compose
+    implementation(libs.androidx.navigation.compose)
+
+    //coil
+    implementation(libs.coil.compose)
+
+    //Kotlin serialization
+    implementation(libs.kotlinx.serialization.json)
 }
