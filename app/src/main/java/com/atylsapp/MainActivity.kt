@@ -8,10 +8,9 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,23 +42,28 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable<MovieListRoute> {
                             val viewModel by viewModels<MovieViewModel>()
+                            val uiState by viewModel.movieUiState.collectAsStateWithLifecycle()
 
                             MovieListScreen(
+                                uiState = uiState,
+                                onSearchValueChange = viewModel::onSearchValueChange,
                                 onMovieClick = { movie ->
                                     movie?.let {
-                                        navController.navigate(
-                                            MovieDetailsRoute
-                                        )
+                                        navController.navigate(MovieDetailsRoute(movie))
                                     }
-                                }
+                                },
+                                onRetryClicked = viewModel::retry
                             )
                         }
 
                         composable<MovieDetailsRoute>(
+                            typeMap = MovieDetailsRoute.typeMap
                         ) {
                             val viewModel = viewModel<MovieDetailsViewModel>()
+                            val uiState by viewModel.movieDetailsUiState.collectAsStateWithLifecycle()
 
                             MovieDetailsScreen(
+                                uiState = uiState,
                                 onBackClick = {
                                     navController.popBackStack()
                                 }

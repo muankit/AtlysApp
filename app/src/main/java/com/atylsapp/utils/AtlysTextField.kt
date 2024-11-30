@@ -26,6 +26,7 @@ fun AtlysTextField(
     text: String,
     onValueChange: (String) -> Unit,
     hint: String = "",
+    enabled: Boolean = true,
     leadingComposable: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -54,6 +55,7 @@ fun AtlysTextField(
             onValueChange = {
                 onValueChange(it)
             },
+            enabled = enabled,
             decorationBox = { innerTextField ->
                 Row(
                     modifier = Modifier

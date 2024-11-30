@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -13,13 +14,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,10 +33,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.atylsapp.models.Movie
 import com.atylsapp.utils.AtlysTextField
+import com.atylsapp.utils.buildImageUrl
 
 @Composable
 fun MovieListScreen(
-    onMovieClick: (Movie?) -> Unit
+    uiState: MovieUiState,
+    onSearchValueChange: (String) -> Unit,
+    onMovieClick: (Movie?) -> Unit,
+    onRetryClicked: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -44,28 +48,44 @@ fun MovieListScreen(
             .background(color = Color.White)
     ) {
 
-        var text by remember { mutableStateOf("") }
-
         AtlysTextField(
             modifier = Modifier.padding(16.dp),
-            text = text,
+            text = uiState.searchTxt ?: "",
             hint = "Search Movies",
-            onValueChange = {
-                text = it
-            }
-        )
+            enabled = !uiState.isLoading && !uiState.isError,
+            onValueChange = onSearchValueChange,
 
-        LazyVerticalGrid(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(5) {
-                MovieItem(onMovieClick = onMovieClick)
+            )
+
+        if (uiState.isLoading) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Loading ....")
+            }
+        } else if (uiState.isError) {
+            Column(
+                Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(text = "We got some error. Please retry!")
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = onRetryClicked) {
+                    Text(text = "Retry")
+                }
+            }
+        } else {
+            LazyVerticalGrid(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(uiState.movies) { movie ->
+                    MovieItem(movie = movie, onMovieClick = onMovieClick)
+                }
             }
         }
     }
@@ -73,7 +93,7 @@ fun MovieListScreen(
 }
 
 @Composable
-private fun MovieItem(onMovieClick: (Movie?) -> Unit) {
+fun MovieItem(movie: Movie?, onMovieClick: (Movie?) -> Unit) {
 
     Column(
         modifier = Modifier
@@ -82,12 +102,7 @@ private fun MovieItem(onMovieClick: (Movie?) -> Unit) {
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ) {
-                onMovieClick(Movie(
-                    id = 8252,
-                    title = "dolore",
-                    overview = "ridiculus",
-                    posterPath = null
-                ))
+                onMovieClick(movie)
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -96,14 +111,14 @@ private fun MovieItem(onMovieClick: (Movie?) -> Unit) {
                 .fillMaxWidth()
                 .height(250.dp)
                 .clip(RoundedCornerShape(12.dp)),
-            model = "",
+            model = buildImageUrl(movie?.posterPath ?: ""),
             contentScale = ContentScale.FillWidth,
             contentDescription = ""
         )
         Spacer(Modifier.height(8.dp))
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = "title",
+            text = movie?.title ?: "",
             maxLines = 1,
             fontWeight = FontWeight.W600,
             overflow = TextOverflow.Ellipsis,
@@ -113,10 +128,32 @@ private fun MovieItem(onMovieClick: (Movie?) -> Unit) {
 
 }
 
+
 @Preview(device = "id:pixel_9")
 @Composable
 private fun MovieListPreview() {
     MovieListScreen(
-        onMovieClick = {}
+        uiState = MovieUiState(
+            isLoading = false,
+            isError = false,
+            movies = listOf(
+                Movie(
+                    id = 1241982,
+                    title = "Moana 2",
+                    posterPath = "/4YZpsylmjHbqeWzjKpUEF8gcLNW.jpg",
+                    overview = "nonumy"
+                ),
+                Movie(
+                    id = 1234811,
+                    title = "Our Little Secret",
+                    posterPath = "/7isqmWUryG2xksrw0E75m3vYTFd.jpg",
+                    overview = "nonumy"
+                )
+            ),
+            searchTxt = null
+        ),
+        onMovieClick = {},
+        onSearchValueChange = {},
+        onRetryClicked = {}
     )
 }

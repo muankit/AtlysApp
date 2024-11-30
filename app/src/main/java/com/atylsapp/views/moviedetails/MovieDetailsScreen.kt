@@ -28,9 +28,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.atylsapp.R
+import com.atylsapp.models.Movie
+import com.atylsapp.utils.buildImageUrl
 
 @Composable
 fun MovieDetailsScreen(
+    uiState: MovieDetailsUiState,
     onBackClick: () -> Unit
 ) {
     Column(
@@ -63,30 +66,35 @@ fun MovieDetailsScreen(
                     .fillMaxWidth()
                     .height(500.dp)
                     .clip(RoundedCornerShape(12.dp)),
-                model = "",
+                model = buildImageUrl(uiState.movie?.posterPath ?: ""),
                 contentScale = ContentScale.FillWidth,
                 contentDescription = ""
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(text = "Title", fontWeight = FontWeight.W600, fontSize = 16.sp)
+            Text(text = uiState.movie?.title ?: "", fontWeight = FontWeight.W600, fontSize = 16.sp)
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Description",
+                text = uiState.movie?.overview ?: "",
                 fontWeight = FontWeight.W400,
                 fontSize = 12.sp
             )
         }
     }
 }
-
 @Preview(device = "id:pixel_9")
 @Composable
 private fun MovieDetailsPreview() {
     MovieDetailsScreen(
+        uiState = MovieDetailsUiState(movie = Movie(
+            id = 4508,
+            title = "tincidunt",
+            overview = "cetero",
+            posterPath = null
+        )),
         onBackClick = {}
     )
 }
